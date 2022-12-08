@@ -9,7 +9,7 @@
 
 using namespace std;
 
-double crossValidation(vector<vector<double>> &data, vector<int> &currentFeatures, int featuretoAdd)
+double crossValidation(vector<vector<double>> &data, vector<int> &currentFeatures, int featuretoAdd, int whichAlgorithm)
 {
     int number_correctly_classified = 0;
     for(int i = 0; i < data.size(); i++){
@@ -28,7 +28,11 @@ double crossValidation(vector<vector<double>> &data, vector<int> &currentFeature
                     distance += pow(data[i][currentFeatures[k]] - data[j][currentFeatures[k]], 2);
                 }
 
-                distance += (pow(data[i][featuretoAdd] - data[j][featuretoAdd], 2.0));
+                if (whichAlgorithm == 1)
+                {
+                    distance += (pow(data[i][featuretoAdd] - data[j][featuretoAdd], 2.0));
+                }
+
                 distance = sqrt(distance);
 
                 if (distance < nearest_neighbor_distance)
@@ -48,12 +52,10 @@ double crossValidation(vector<vector<double>> &data, vector<int> &currentFeature
     return (double)number_correctly_classified/data.size()*100;
 }
 
-void search(vector<vector<double>> &data)
+void forward(vector<vector<double>> &data, int whichAlgorithm)
 {
     vector<int> current_set_of_features;
     vector<int> bestFeatureSet;
-    
-    cout << "\nThis dataset has " << data[0].size()-1 << " features (not including the class attribute), with " << data.size() << " instances.\n\n";
 
     double bestOverallAccuracy = 0;
     double localBestAccuracy = 0;
@@ -69,7 +71,7 @@ void search(vector<vector<double>> &data)
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), j) != current_set_of_features.end()))
             {
                 
-                double accuracy = crossValidation(data, current_set_of_features, j);
+                double accuracy = crossValidation(data, current_set_of_features, j, whichAlgorithm);
 
                 outputfeature = current_set_of_features;
                 outputfeature.push_back(j);
@@ -106,8 +108,9 @@ void search(vector<vector<double>> &data)
 
         if (localBestAccuracy < bestOverallAccuracy)
         {
-            cout << "\n(Warning, Accuraacy has decreased! Continuing search in case of local maxima)";
+            cout << "\n(Warning, Accuracy has decreased! Continuing search in case of local maxima)";
         }
+
         cout << "\nFeature set {";
 
         for (int i = 0; i < current_set_of_features.size(); i++)
@@ -119,10 +122,88 @@ void search(vector<vector<double>> &data)
             }
         }
 
-        cout <<"} was best, accuracy is "<<localBestAccuracy<<"%\n";
+        cout <<"} was best, accuracy is "<<localBestAccuracy<<"%\n\n";
 
-        cout <<endl;
+    }
+
+    cout <<"Finished search!! The best feature subset is {";
+    for (int i = 0; i < bestFeatureSet.size(); i++)
+    {
+            cout << bestFeatureSet[i];
+            if(i != bestFeatureSet.size()-1)
+            {
+                cout << ",";
+            }
+    }
+    cout << "}, which has an accuracy of " << bestOverallAccuracy << "%\n";
+}
+
+void backward(vector<vector<double>> &data, vector<int> &currFeatures, int whichAlgorithm)
+{
+    int feature_to_remove;
+    vector<int> bestFeatureSet;
+    double bestOverallAccuracy = 0;
+    double localBestAccuracy = 0;
+    vector<int> outputfeature;
+
+    while(currFeatures.size() > 1)
+    {
+       double bestAccuracy = 0;
+    for(int i = 0; i < currFeatures.size(); i++)
+    {
+        
+        outputfeature = currFeatures;
+        outputfeature.erase(outputfeature.begin()+i);
+        double accuracy = crossValidation(data, outputfeature, whichAlgorithm, whichAlgorithm);
+
+        cout << "Using features(s) {";
+
+        for (int i = 0; i < outputfeature.size(); i++)
+        {
+            cout << outputfeature[i];
+            if(i != outputfeature.size()-1)
+            {
+                cout << ",";
+            }
+        }
+
+        cout << "} accuracy is "<< accuracy <<"%"<<endl;
+
+        if (accuracy > bestAccuracy)
+        {
+            bestAccuracy = accuracy;
+            localBestAccuracy = bestAccuracy;
+            feature_to_remove = i;
+            
+        }
+
+        if(bestAccuracy > bestOverallAccuracy)
+        {
+            bestOverallAccuracy =bestAccuracy;
+            bestFeatureSet = outputfeature;
+        }
+
+    }
     
+    currFeatures.erase(currFeatures.begin() + feature_to_remove);
+
+    if (localBestAccuracy < bestOverallAccuracy)
+    {
+        cout << "\n(Warning, Accuracy has decreased! Continuing search in case of local maxima)";
+    }
+
+     cout << "\nFeature set {";
+
+        for (int i = 0; i < currFeatures.size(); i++)
+        {
+            cout << currFeatures[i];
+            if(i != currFeatures.size()-1)
+            {
+                cout << ",";
+            }
+        }
+
+    cout <<"} was best, accuracy is "<<localBestAccuracy<<"%\n\n";
     }
 
     cout <<"Finished search!! The best feature subset is {";
@@ -139,11 +220,27 @@ void search(vector<vector<double>> &data)
 
 int main(){
 
-    vector<vector<double>> dataSet; // small 17 large 95 is actual
-    ifstream myfile("CS170_Small_Data__96.txt");  //CS170_Small_Data__96.txt for testing
-    string content;
-    double value; //change all doubles to floats to see if it still runs accurately and runs faster
+    vector<vector<double>> dataSet; // small 17 large 95 
+    string filename;
+    int choice;
+    int choice2;
 
+    cout<< "Welcome to David Liu's Feature Selection Algorithm.\nSelect the file you want to test:\n1. CS170_Small_Data__17.txt\n2. CS170_Large_Data__95.txt\n\n";
+    cin >> choice;
+    if (choice == 1)
+    {
+        filename = "CS170_Small_Data__17.txt";
+    }
+    else if (choice == 2)
+    {
+        filename = "CS170_Large_Data__95.txt";
+    }
+    cout<< "Type the number of the algorithm you want to run\n\n1) Forward Selection\n2) Backward Elimination\n\n";
+    cin >> choice2;
+
+    ifstream myfile(filename);  
+    string content;
+    double value; 
     while(getline(myfile, content)){
         stringstream row(content); 
         vector<double> temp;
@@ -152,10 +249,26 @@ int main(){
         }
         dataSet.push_back(temp);
     }
-
     myfile.close();
 
-    search(dataSet);
+    cout << "\nThis dataset has " << dataSet[0].size()-1 << " features (not including the class attribute), with " << dataSet.size() << " instances.\n\n";
+
+    vector<int> temp2;
+    for (int i = 1; i < dataSet[i].size(); i++)
+    {
+        temp2.push_back(i);
+    }
+    double firstAccuracy = crossValidation(dataSet, temp2, temp2.size(), 2);
+    cout << "Running nearest neighbor with all features, using \"leaving-one-out\" evaluation, I get an accuracy of " << firstAccuracy<<"%\n\n";
+
+    if (choice2 == 1)
+    {
+        forward(dataSet, choice2);
+    }
+    else if (choice2 ==2)
+    {
+        backward(dataSet, temp2, choice2);
+    }
     
     return 0;
 }
