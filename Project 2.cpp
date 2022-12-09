@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <limits>
 #include <cmath>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -54,6 +56,7 @@ double crossValidation(vector<vector<double>> &data, vector<int> &currentFeature
 
 void forward(vector<vector<double>> &data, int whichAlgorithm)
 {
+    clock_t tStart = clock();
     vector<int> current_set_of_features;
     vector<int> bestFeatureSet;
 
@@ -136,10 +139,12 @@ void forward(vector<vector<double>> &data, int whichAlgorithm)
             }
     }
     cout << "}, which has an accuracy of " << bestOverallAccuracy << "%\n";
+    printf("Time taken: %.3fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
 
 void backward(vector<vector<double>> &data, vector<int> &currFeatures, int whichAlgorithm)
 {
+    clock_t tStart = clock();
     int feature_to_remove;
     vector<int> bestFeatureSet;
     double bestOverallAccuracy = 0;
@@ -216,6 +221,7 @@ void backward(vector<vector<double>> &data, vector<int> &currFeatures, int which
             }
     }
     cout << "}, which has an accuracy of " << bestOverallAccuracy << "%\n";
+    printf("Time taken: %.3fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
 
 int main(){
@@ -254,6 +260,7 @@ int main(){
     cout << "\nThis dataset has " << dataSet[0].size()-1 << " features (not including the class attribute), with " << dataSet.size() << " instances.\n\n";
 
     vector<int> temp2;
+    vector<int> temp3;
     for (int i = 1; i < dataSet[i].size(); i++)
     {
         temp2.push_back(i);
