@@ -1,13 +1,13 @@
 # CS170-Project-2
 
-#To run,
+To run,
 
-#1. Download the cpp file or copy and paste the code.
+1. Download the cpp file or copy and paste the code.
 
-#2. Make sure you are in the directory of where you put the file with the code
+2. Make sure you are in the directory of where you put the file with the code
 
-#3. In the terminal, enter g++ -o puzzle '.\Project 2.cpp' (or whatever the filename with the code is called)
+3. In the terminal, enter g++ -o puzzle '.\Project 2.cpp' (or whatever the filename with the code is called)
 
-#4. In the terminal, enter ./puzzle
+4. In the terminal, enter ./puzzle
 
-#5. Follow the intstructions in the interface in the terminal
+5. Follow the intstructions in the interface in the terminal
